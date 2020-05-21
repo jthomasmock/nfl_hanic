@@ -67,6 +67,10 @@ style_mono_light(
 * You're new to `tidymodels`
 * You're awesome because you came to HANIC!
 
+### Slide Link: [`jthomasmock.github.io/nfl_hanic/`](https://jthomasmock.github.io/nfl_hanic/)
+
+### Repo w/ Code: [github.com/jthomasmock/nfl_hanic](https://github.com/jthomasmock/nfl_hanic)
+
 ---
 
 # `tidymodels`
@@ -565,8 +569,6 @@ full_plot <- bind_rows(roc_rf, roc_lr) %>%
   theme(legend.position = "top")
   
 full_plot
-
-ggsave("combo_plot.png", full_plot, height = )
 ```
 
 ]
