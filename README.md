@@ -2,7 +2,7 @@
 
 Slides for my HANIC presentation
 
-You can find the longer form writeup on my blog at [themockup.blog](https://themockup.blog/).
+You can find the longer form writeup on my blog at [themockup.blog](https://themockup.blog/) -- this will be a true statement... in the future. For now the slide deck is my writeup!
 
 To get the 2.2 GB of raw data you'll need to download the data from 2000-2019 via `nflfastR`, otherwise my code as included should get you to the end result.
 
