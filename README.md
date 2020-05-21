@@ -13,3 +13,19 @@ Full Disclosure:
 
 
 ![Thank you `nflscrapR` and `nflfastR`](thank_you.png)
+
+# Learn more about `tidymodels`
+
+* [`tidymodels`.org](https://www.tidymodels.org/learn/) has step by step guides of various complexities
+
+* I'll be adding additional NFL-focused examples at: [TheMockup.blog](https://themockup.blog/posts/2020-05-01-tidy-long-models/)
+
+* Julia Silge's (a `tidymodels` maintainer) [blog](https://juliasilge.com/) or [video series](https://www.youtube.com/channel/UCTTBgWyJl2HrrhQOOc710kA)  
+  * She has 10+ videos/blogposts covering various aspects of the full pipeline
+  * Most recently covered [predicting Beach Volleyball winners](https://juliasilge.com/blog/xgboost-tune-volleyball/) w/ a tuned XGBoost model
+
+* Alison Hill's [Workshop from rstudio::conf2020](https://conf20-intro-ml.netlify.app/)
+
+* Gentle Intro to `tidymodels` on [RStudio RViews blog](https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/)
+
+* Julia Silge's online [free interactive course](https://supervised-ml-course.netlify.app/)
