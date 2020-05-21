@@ -330,6 +330,7 @@ pbp_rec &lt;- recipe(play_type ~ ., data = train_data) %&gt;%
 
 
 ```r
+# Note that mode = "classification" is the default here anyway!
 lr_mod &lt;- logistic_reg(mode = "classification") %&gt;% 
   set_engine("glm")
 ```
@@ -422,7 +423,7 @@ pbp_pred_lr %&gt;%
 
 ]
 
-  
+.pull-right[  
 .small[
 
 ```r
@@ -438,7 +439,7 @@ pbp_pred_lr %&gt;%
 ]
 
 ![](lr_roc_curve.png)
-
+]
 
 ---
 
@@ -462,8 +463,7 @@ pbp_rec &lt;- recipe(play_type ~ ., data = train_data) %&gt;%
   update_role(game_id, game_date, yards_gained, new_role = "ID") %&gt;% 
   step_corr(all_numeric(), threshold = 0.7) %&gt;% 
   step_center(all_numeric()) %&gt;% 
-  step_zv(all_predictors()) %&gt;% 
-  step_downsample(play_type)
+  step_zv(all_predictors())
 
 # Choose a model and an engine
 lr_mod &lt;- logistic_reg(mode = "classification") %&gt;% 
@@ -590,6 +590,7 @@ roc_lr &lt;- pbp_pred_lr %&gt;%
   mutate(model = "Logistic Regression")
 
 full_plot &lt;- bind_rows(roc_rf, roc_lr) %&gt;% 
+  # Note that autoplot() would also work here!
   ggplot(aes(x = 1 - specificity, 
              y = sensitivity, 
              color = model)) + 
