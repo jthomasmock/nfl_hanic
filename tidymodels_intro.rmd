@@ -1,11 +1,15 @@
 ---
 title: "Intro to `tidymodels` with `nflscrapR` play-by-play"
-author: "Thomas Mock"
+author: "Thomas Mock: `@thomas_mock`"
 date: "2020-05-21"
 output:
   xaringan::moon_reader:
     nature: 
       beforeInit: "https://platform.twitter.com/widgets.js"
+      highlightStyle: github
+      highlightLines: true
+      highlightSpans: true
+      countIncrementalSlides: false
     css: xaringan-themer.css
 ---
 
@@ -14,7 +18,8 @@ library(tidyverse)
 library(tidymodels)
 library(xaringan)
 
-knitr::opts_chunk$set(eval = FALSE)
+knitr::opts_chunk$set(eval = FALSE, tidy = FALSE)
+
 ```
 
 
@@ -61,6 +66,39 @@ style_mono_light(
 }
 
 ```
+
+
+## Before we get started, thank you to:
+
+.pull-left[
+### The `nflscrapR` team:
+(data from 2009-current)
+* Maksim Horowitz
+* Ron Yurko
+* Sam Ventura
+* Rishav Dutta
+
+### The `nflfastR` team:
+(data from 2000-current)
+* Ben Baldwin
+* Sebastian Carl
+]
+
+.pull-right[
+```{r, eval = TRUE, out.width = "50%", echo = FALSE}
+knitr::include_graphics("https://pbs.twimg.com/profile_images/1076883081192263680/hj53KzOl_400x400.jpg")
+```
+<br>
+
+```{r, eval = TRUE, out.width = "50%", echo = FALSE}
+knitr::include_graphics("https://raw.githubusercontent.com/mrcaseb/nflfastR/master/man/figures/logo.png")
+```
+
+]
+
+These datasets set the bar for publicly-available NFL data!
+
+---
 
 ### Twitter-driven Development
 
@@ -127,55 +165,7 @@ The `tidymodels` framework is a collection of packages for modeling and machine 
 * `broom`: converts common R statistical objects into predictable formats
 * `dials`: creates and manages tuning parameters/grids
 
----
 
-# Learn more
-
-* [`tidymodels`.org](https://www.tidymodels.org/learn/) has step by step guides of various complexities
-
-* I'll be adding additional NFL-focused examples at: [TheMockup.blog](https://themockup.blog/posts/2020-05-01-tidy-long-models/)
-
-* Julia Silge's (a `tidymodels` maintainer) [blog](https://juliasilge.com/) or [video series](https://www.youtube.com/channel/UCTTBgWyJl2HrrhQOOc710kA)  
-  * She has 10+ videos/blogposts covering various aspects of the full pipeline
-  * Most recently covered [predicting Beach Volleyball winners](https://juliasilge.com/blog/xgboost-tune-volleyball/) w/ a tuned XGBoost model
-
-* Alison Hill's [Workshop from rstudio::conf2020](https://conf20-intro-ml.netlify.app/)
-
-* Gentle Intro to `tidymodels` on [RStudio RViews blog](https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/)
-
-* Julia Silge's online [free interactive course](https://supervised-ml-course.netlify.app/)
-
----
-
-## Before we get started, thank you to:
-
-.pull-left[
-### The `nflscrapR` team:
-(data from 2009-current)
-* Maksim Horowitz
-* Ron Yurko
-* Sam Ventura
-* Rishav Dutta
-
-### The `nflfastR` team:
-(data from 2000-current)
-* Ben Baldwin
-* Sebastian Carl
-]
-
-.pull-right[
-```{r, eval = TRUE, out.width = "50%", echo = FALSE}
-knitr::include_graphics("https://pbs.twimg.com/profile_images/1076883081192263680/hj53KzOl_400x400.jpg")
-```
-<br>
-
-```{r, eval = TRUE, out.width = "50%", echo = FALSE}
-knitr::include_graphics("https://raw.githubusercontent.com/mrcaseb/nflfastR/master/man/figures/logo.png")
-```
-
-]
-
-These datasets set the bar for publicly-available NFL data!
 
 ---
 
@@ -183,10 +173,12 @@ These datasets set the bar for publicly-available NFL data!
 
 Filtered down from the `nflscrapR` and `nflfastR` datasets (~2.25 GB) to only non-penalty run and pass plays from 2000 and 2019. This is about 15 million data points across ~630 thousand plays.
 
+#### The goal: Predict if an upcoming play will be a `run` or a `pass`
+
 .small[
 ```{r, size=1}
-# Rows: 628,602
-# Columns: 25
+# `Rows: 628,602`
+# `Columns: 25`
 # $ play_type                  <fct> run, pass, pass, run, run, run, pass, pass, pass, run, pass,…
 # $ yards_gained               <dbl> 2, 0, 0, 8, 3, -1, 15, 11, 0, 3, 0, -1, 5, 7, 0, -1, 13, 1, …
 # $ season                     <fct> 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, …
@@ -254,16 +246,16 @@ I added a few features, namely a running total of number of runs/passes pre-snap
 add_previous_play <- raw_plays %>%
   group_by(game_id, posteam) %>%
   mutate(
-    total_runs = if_else(play_type == "run",
+    `total_runs` = if_else(play_type == "run",
       cumsum(run) - 1, cumsum(run)
     ),
-    total_pass = if_else(play_type == "pass",
+    `total_pass` = if_else(play_type == "pass",
       cumsum(pass) - 1, cumsum(pass)
     ),
-    previous_play = if_else(posteam == lag(posteam),
+    `previous_play` = if_else(posteam == lag(posteam),
       lag(play_type), "First play of Drive"
     ),
-    previous_play = if_else(is.na(previous_play),
+    `previous_play` = if_else(is.na(previous_play),
       replace_na("First play of Drive"), previous_play
     )
   ) %>%
@@ -293,10 +285,10 @@ split_pbp <- initial_split(all_plays, 0.75, strata = play_type)
 split_pbp
 
 # separate the training data
-train_data <- training(split_pbp)
+train_data <- `training(split_pbp)`
 
 # separate the testing data
-test_data <- testing(split_pbp)
+test_data <- `testing(split_pbp)`
 ```
 
 ---
@@ -436,12 +428,12 @@ pbp_pred_lr %>%
 # A tibble: 1 x 3
 #   .metric .estimator .estimate
 #   <chr>   <chr>          <dbl>
-# 1 roc_auc binary         0.761
+# 1 `roc_auc binary         0.761`
 
 # A tibble: 2 x 3
 #   .metric  .estimator .estimate
 #   <chr>    <chr>          <dbl>
-# 1 accuracy binary         0.698
+# 1 `accuracy binary         0.698`
 # 2 kap      binary         0.384
 ```
 ]
@@ -468,7 +460,7 @@ pbp_pred_lr %>%
 
 ---
 
-#### All together!
+**Split**
 
 .small[
 ```{r}
@@ -479,7 +471,7 @@ split_pbp <- initial_split(all_plays, 0.75, strata = play_type)
 train_data <- training(split_pbp)
 test_data <- testing(split_pbp)
 ```
-
+**Pre-Process & Choose a model**
 ```{r}
 # Create a pre-processing recipe
 pbp_rec <- recipe(play_type ~ ., data = train_data) %>% 
@@ -492,10 +484,10 @@ pbp_rec <- recipe(play_type ~ ., data = train_data) %>%
 lr_mod <- logistic_reg(mode = "classification") %>% 
   set_engine("glm")
 ```
-
+**Combine into a workflow**
 
 ```{r}
-# Combine the mode and recipe to the workflow
+# Combine the model and recipe to the workflow
 lr_wflow <- workflow() %>% 
   add_model(lr_mod) %>% 
   add_recipe(pbp_rec)
@@ -504,7 +496,7 @@ lr_wflow <- workflow() %>%
 pbp_fit_lr <- lr_wflow %>% 
   fit(data = train_data)
 ```
-
+**Predict and get metrics**
 ```{r}
 # Get predictions
 pbp_pred_lr <- predict(pbp_fit_lr, test_data) %>% 
@@ -522,26 +514,25 @@ pbp_pred_lr %>%
 
 ## Change the model
 
-How about a Random Forest model?
+How about a Random Forest model? Just change the model and re-run!
 
 ```{r}
 rf_mod <- rand_forest(trees = 1000) %>% 
   set_engine("ranger", 
-             # This lets us do variable importance later
-             importance = "impurity", 
-             # Parallelization of the model
-             num.threads = 4) %>% 
+             importance = "impurity", # variable importance
+             num.threads = 4) %>%     # Parallelize
   set_mode("classification")
 
 rf_wflow <- workflow() %>% 
-  add_model(rf_mod) %>%  # New model
-  add_recipe(pbp_rec) # Same recipe
+  `add_model(rf_mod)` %>%  # New model
+  add_recipe(pbp_rec)    # Same recipe
 
-pbp_fit_rf <- rf_wflow %>% 
-  fit(data = train_data)
+pbp_fit_rf <- rf_wflow %>% # New workflow
+  fit(data = train_data)   # Fit the Random Forest
 
-pbp_pred_rf <- predict(pbp_fit_rf, test_data) %>% 
-  bind_cols(test_data %>% select(play_type, down, ydstogo)) %>% 
+# Get predictions and check metrics
+pbp_pred_rf <- `predict(pbp_fit_rf, test_data)` %>% 
+  bind_cols(test_data %>% select(play_type)) %>% 
   bind_cols(predict(pbp_fit_rf, test_data, type = "prob"))
 ```
 
@@ -560,17 +551,17 @@ pbp_pred_lr %>%
   metrics(truth = play_type, .pred_class)
 ```
 
-```{r compare metrics print}
+```{r compare metrics print, tidy = FALSE}
 # A tibble: 2 x 3
 #   .metric  .estimator .estimate
 #   <chr>    <chr>          <dbl>
-# 1 accuracy binary         0.722
-# 2 kap      binary         0.433
+# 1 accuracy binary         `0.722`
+# 2 kap      binary         0.433 
 # 
 # A tibble: 2 x 3
 #   .metric  .estimator .estimate
 #   <chr>    <chr>          <dbl>
-# 1 accuracy binary         0.698
+# 1 accuracy binary         `0.698`
 # 2 kap      binary         0.384
 
 ```
@@ -599,11 +590,11 @@ pbp_fit_rf %>%
 .pull-left[
 ```{r}
 roc_rf <- pbp_pred_rf %>% 
-  roc_curve(truth = play_type, .pred_pass) %>% 
+  `roc_curve(truth = play_type, .pred_pass)` %>% 
   mutate(model = "Random Forest")
 
 roc_lr <- pbp_pred_lr %>% 
-  roc_curve(truth = play_type, .pred_pass) %>% 
+  `roc_curve(truth = play_type, .pred_pass)` %>% 
   mutate(model = "Logistic Regression")
 
 full_plot <- bind_rows(roc_rf, roc_lr) %>% 
