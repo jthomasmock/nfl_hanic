@@ -4,6 +4,8 @@ author: "Thomas Mock"
 date: "2020-05-21"
 output:
   xaringan::moon_reader:
+    nature: 
+      beforeInit: "https://platform.twitter.com/widgets.js"
     css: xaringan-themer.css
 ---
 
@@ -60,16 +62,54 @@ style_mono_light(
 
 ```
 
+### Twitter-driven Development
+
+.pull-left[
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Super excited to be joining in on the next <a href="https://twitter.com/hashtag/HANIC?src=hash&amp;ref_src=twsrc%5Etfw">#HANIC</a> chat on May 21st - NFL crossover edition!<br><br>Got invited to give a 10 min talk - potential talks below that I&#39;d like to hear your potential interest in (all would be built around NFL data)<a href="https://twitter.com/hashtag/nflscrapR?src=hash&amp;ref_src=twsrc%5Etfw">#nflscrapR</a> <a href="https://twitter.com/hashtag/rstats?src=hash&amp;ref_src=twsrc%5Etfw">#rstats</a></p>&mdash; Tom Mock (@thomas_mock) <a href="https://twitter.com/thomas_mock/status/1260273131991810049?ref_src=twsrc%5Etfw">May 12, 2020</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+]
+
+.pull-right[
+Of course the highest voted submission was for a resource I had yet to write! 
+
+`r emo::ji("person_facepalming")` `r emo::ji("person_facepalming")` `r emo::ji("person_facepalming")`
+
+Other long-form writeups I have completed for y'all
+
+* [`nflscrapR` dataviz w/ `ggplot2`](https://jthomasmock.github.io/nfl_plotting_cookbook/#how_to_improve_your_nflscrapr_graphics)  
+* [Using R w/ SQL through `dbplyr` for `nflfastR`](https://themockup.blog/posts/2019-04-28-nflfastr-dbplyr-rsqlite/)  
+* [Multiple tidy `nflscrapR` models at once w/ `broom` + `dplyr`](https://themockup.blog/posts/2020-05-01-tidy-long-models/)  
+
+]
+
+
+---
+
 ### Personas
 
-* You're interested in fitting models in R with NFL data
-* You've done some modeling
-* You're new to `tidymodels`
-* You're awesome because you came to HANIC!
+* You've done some modeling in R  
+   `r emo::ji("laptop_computer")` + `r emo::ji("chart_increasing")`
 
-### Slide Link: [`jthomasmock.github.io/nfl_hanic/`](https://jthomasmock.github.io/nfl_hanic/)
+--
 
-### Repo w/ Code: [github.com/jthomasmock/nfl_hanic](https://github.com/jthomasmock/nfl_hanic)
+* You're interested in fitting models in R with sports data  
+   `r emo::ji("laptop_computer")` + `r emo::ji("chart_increasing")` + `r emo::ji("football")`
+
+--
+
+* You're new to `tidymodels` AND you want to fit models to sports data  
+   `r emo::ji("light_bulb")` + `r emo::ji("computer")` + `r emo::ji("chart_increasing")` + `r emo::ji("football")`
+
+--
+
+* You're awesome because you came to HANIC!  
+   `r emo::ji("raising_hands")` `r emo::ji("ice_hockey")`
+
+--
+
+#### Slide Link: [`jthomasmock.github.io/nfl_hanic/`](https://jthomasmock.github.io/nfl_hanic/)
+
+#### Repo w/ Code: [`github.com/jthomasmock/nfl_hanic`](https://github.com/jthomasmock/nfl_hanic)
 
 ---
 
@@ -95,14 +135,17 @@ The `tidymodels` framework is a collection of packages for modeling and machine 
 
 * I'll be adding additional NFL-focused examples at: [TheMockup.blog](https://themockup.blog/posts/2020-05-01-tidy-long-models/)
 
-* Julia Silge's (a `tidymodels` maintainer) [blog](https://juliasilge.com/) or [video series](https://www.youtube.com/channel/UCTTBgWyJl2HrrhQOOc710kA)
+* Julia Silge's (a `tidymodels` maintainer) [blog](https://juliasilge.com/) or [video series](https://www.youtube.com/channel/UCTTBgWyJl2HrrhQOOc710kA)  
+  * She has 10+ videos/blogposts covering various aspects of the full pipeline
+  * Most recently covered [predicting Beach Volleyball winners](https://juliasilge.com/blog/xgboost-tune-volleyball/) w/ a tuned XGBoost model
 
 * Alison Hill's [Workshop from rstudio::conf2020](https://conf20-intro-ml.netlify.app/)
 
 * Gentle Intro to `tidymodels` on [RStudio RViews blog](https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/)
 
----
+* Julia Silge's online [free interactive course](https://supervised-ml-course.netlify.app/)
 
+---
 
 ## Before we get started, thank you to:
 
@@ -313,7 +356,7 @@ pbp_rec <- recipe(play_type ~ ., data = train_data) %>%
 
 ## Choose a model and start your engines!
 
-`parsip` supplies a general modeling interface to the wide world of R models!
+`parsnip` supplies a general modeling interface to the wide world of R models!
 
 
 ```{r}
@@ -439,7 +482,11 @@ test_data <- testing(split_pbp)
 ```{r}
 # Create a pre-processing recipe
 pbp_rec <- recipe(play_type ~ ., data = train_data) %>% 
-  update_role(game_id, game_date, yards_gained, new_role = "ID")
+  update_role(game_id, game_date, yards_gained, new_role = "ID") %>% 
+  step_corr(all_numeric(), threshold = 0.7) %>% 
+  step_center(all_numeric()) %>% 
+  step_zv(all_predictors()) %>% 
+  step_downsample(play_type)
 
 # Choose a model and an engine
 lr_mod <- logistic_reg(mode = "classification") %>% 
@@ -503,7 +550,7 @@ pbp_pred_rf <- predict(pbp_fit_rf, test_data) %>%
 
 ### Quick comparison
 
-The random forest model slightly outperforms the logistic regression, although both are fairly `meh`
+The random forest model slightly outperforms the logistic regression, although both are not great
 
 ```{r compare_metrics call}
 pbp_pred_rf %>% 
@@ -520,11 +567,11 @@ pbp_pred_lr %>%
 # 1 accuracy binary         0.722
 # 2 kap      binary         0.433
 # 
-# # A tibble: 2 x 3
+# A tibble: 2 x 3
 #   .metric  .estimator .estimate
 #   <chr>    <chr>          <dbl>
-# 1 accuracy binary         0.700
-# 2 kap      binary         0.388
+# 1 accuracy binary         0.698
+# 2 kap      binary         0.384
 
 ```
 
@@ -580,3 +627,27 @@ full_plot
 ![](combo_plot.png)
 
 ]
+
+---
+
+### Thank you
+
+* `nflscrapR` & `nflfastR` teams `r emo::ji("football")` `r emo::ji("laptop_computer")`
+* `#HANIC hosts`: Meghan and Alison `r emo::ji("ice_hockey")`
+* Michael Lopez `r emo::ji("football")`
+* All y'all for listening in `r emo::ji("cowboy")`
+
+### Learn more
+
+* [`tidymodels`.org](https://www.tidymodels.org/learn/) has step by step guides of various complexities
+
+* I'll be adding additional NFL-focused examples at: [TheMockup.blog](https://themockup.blog/posts/2020-05-01-tidy-long-models/)
+
+* Julia Silge's (a `tidymodels` maintainer) [blog](https://juliasilge.com/) or [video series](https://www.youtube.com/channel/UCTTBgWyJl2HrrhQOOc710kA)  
+  * Most recent: [predicting Beach Volleyball winners](https://juliasilge.com/blog/xgboost-tune-volleyball/) w/ a tuned XGBoost model
+
+* Alison Hill's [Workshop from rstudio::conf2020](https://conf20-intro-ml.netlify.app/)
+
+* Gentle Intro to `tidymodels` on [RStudio RViews blog](https://rviews.rstudio.com/2019/06/19/a-gentle-intro-to-tidymodels/)
+
+* Julia Silge's online [free interactive course](https://supervised-ml-course.netlify.app/)
