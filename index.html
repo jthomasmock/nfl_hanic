@@ -268,7 +268,7 @@ train_data %&gt;%
 # A tibble: 2 x 3
 #   play_type      n ratio
 #   &lt;fct&gt;      &lt;int&gt; &lt;dbl&gt;
-# 1 pass      270979 0.575
+# 1 `pass      270979 0.575`
 # 2 run       200473 0.425
 ```
 
@@ -285,7 +285,7 @@ test_data %&gt;%
 # A tibble: 2 x 3
 #   play_type     n ratio
 #   &lt;fct&gt;     &lt;int&gt; &lt;dbl&gt;
-# 1 pass      90326 0.575
+# 1 `pass      90326 0.575`
 # 2 run       66824 0.425
 ```
 
@@ -520,10 +520,10 @@ The random forest model slightly outperforms the logistic regression, although b
 
 
 ```r
-pbp_pred_rf %&gt;% 
+`pbp_pred_rf` %&gt;% # Random Forest predictions
   metrics(truth = play_type, .pred_class)
 
-pbp_pred_lr %&gt;% 
+`pbp_pred_lr` %&gt;% # Logistic Regression predictions
   metrics(truth = play_type, .pred_class)
 ```
 
